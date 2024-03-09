@@ -30,7 +30,7 @@ module med_methods_mod
   end interface med_methods_check_for_nans
 
   ! used/reused in module
-
+  logical, public               :: mediator_checkfornans  ! set in med.F90 AdvertiseFields
   logical                       :: isPresent
   character(len=1024)           :: msgString
   type(ESMF_FieldStatus_Flag)   :: status
@@ -1354,7 +1354,10 @@ contains
         call med_methods_Field_GetFldPtr(lfield, fldptr1=dataptro1, fldptr2=dataptro2, rank=lranko, rc=rc)
         if (chkerr(rc,__LINE__,u_FILE_u)) return
 
-        if (lranki == 1 .and. lranko == 1) then
+        if (lranki == 0 .and. lranko == 0) then
+           ! do nothing
+          call ESMF_LogWrite(trim(subname)//": Both ranki and ranko are 0", ESMF_LOGMSG_INFO)
+        elseif (lranki == 1 .and. lranko == 1) then
 
           if (.not.med_methods_FieldPtr_Compare(dataPtro1, dataPtri1, subname, rc)) then
             call ESMF_LogWrite(trim(subname)//": ERROR in dataPtr1 size ", ESMF_LOGMSG_ERROR)
@@ -1397,7 +1400,7 @@ contains
         else
 
           write(msgString,'(a,2i8)') trim(subname)//": ranki, ranko = ",lranki,lranko
-          call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_INFO)
+          call ESMF_LogWrite(trim(msgString), ESMF_LOGMSG_ERROR)
           call ESMF_LogWrite(trim(subname)//": ERROR ranki ranko not supported "//trim(lfieldnamelist(n)), &
                ESMF_LOGMSG_ERROR)
           rc = ESMF_FAILURE
@@ -2506,12 +2509,12 @@ contains
   end subroutine med_methods_FB_getmesh
 
   !-----------------------------------------------------------------------------
-  subroutine med_methods_FB_check_for_nans(FB, rc)
-
-    use ESMF, only : ESMF_FieldBundle, ESMF_Field, ESMF_FieldBundleGet, ESMF_FieldGet
-
+  subroutine med_methods_FB_check_for_nans(FB, maintask, logunit, rc)
+    use ESMF, only  : ESMF_FieldBundle, ESMF_Field, ESMF_FieldBundleGet, ESMF_FieldGet
     ! input/output variables
     type(ESMF_FieldBundle) , intent(in)    :: FB
+    logical                , intent(in)    :: maintask
+    integer                , intent(in)    :: logunit
     integer                , intent(inout) :: rc
 
     ! local variables
@@ -2530,11 +2533,8 @@ contains
     ! ----------------------------------------------
     rc = ESMF_SUCCESS
 
-#ifndef CESMCOUPLED
-    ! For now only CESM uses shr_infnan_isnan - so until other models provide this
-    RETURN
-#endif
-
+    if(.not. mediator_checkfornans) return
+    
     call ESMF_FieldBundleGet(FB, fieldCount=fieldCount, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
@@ -2571,8 +2571,6 @@ contains
   end subroutine med_methods_FB_check_for_nans
 
   !-----------------------------------------------------------------------------
-#ifdef CESMCOUPLED
-
   subroutine med_methods_check_for_nans_1d(dataptr, nancount)
     use shr_infnan_mod, only: shr_infnan_isnan
     ! input/output variables
@@ -2606,27 +2604,5 @@ contains
        end do
     end do
   end subroutine med_methods_check_for_nans_2d
-
-#else
-
-  ! For now only CESM uses shr_infnan_isnan - so until other models provide this
-  ! nancount will just be set to zero
-
-  subroutine med_methods_check_for_nans_1d(dataptr, nancount)
-    ! input/output variables
-    real(r8) , intent(in)  :: dataptr(:)
-    integer  , intent(out) :: nancount
-
-    nancount = 0
-  end subroutine med_methods_check_for_nans_1d
-
-  subroutine med_methods_check_for_nans_2d(dataptr, nancount)
-    ! input/output variables
-    real(r8) , intent(in)  :: dataptr(:,:)
-    integer  , intent(out) :: nancount
-
-    nancount = 0
-  end subroutine med_methods_check_for_nans_2d
-#endif
 
 end module med_methods_mod

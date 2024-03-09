@@ -276,6 +276,7 @@ contains
        call addfld_from(compatm, 'Sa_shum')
        call addfld_from(compatm, 'Sa_ptem')
        call addfld_from(compatm, 'Sa_dens')
+       call addfld_from(compatm, 'Faxa_rainc')
        if (flds_wiso) then
           call addfld_from(compatm, 'Sa_shum_wiso')
        end if
@@ -288,6 +289,7 @@ contains
              call addmap_from(compatm, 'Sa_u' , compocn, mappatch, 'one', atm2ocn_map)
              call addmap_from(compatm, 'Sa_v' , compocn, mappatch, 'one', atm2ocn_map)
           end if
+          call addmap_from(compatm, 'Faxa_rainc', compocn, mapconsf, 'one', atm2ocn_map)
           call addmap_from(compatm, 'Sa_z'   , compocn, mapbilnr, 'one', atm2ocn_map)
           call addmap_from(compatm, 'Sa_tbot', compocn, mapbilnr, 'one', atm2ocn_map)
           call addmap_from(compatm, 'Sa_pbot', compocn, mapbilnr, 'one', atm2ocn_map)
@@ -1366,6 +1368,24 @@ contains
     end if
 
     ! ---------------------------------------------------------------------
+    ! to atm: unmerged ugust_out from ocn 
+    ! ---------------------------------------------------------------------
+    if (phase == 'advertise') then
+       call addfld_aoflux('So_ugustOut')
+       call addfld_to(compatm, 'So_ugustOut')
+    else
+       if ( fldchk(is_local%wrap%FBexp(compatm), 'So_ugustOut', rc=rc)) then
+          if (fldchk(is_local%wrap%FBMed_aoflux_o, 'So_ugustOut', rc=rc)) then
+             if (trim(is_local%wrap%aoflux_grid) == 'ogrid') then
+                call addmap_aoflux('So_ugustOut', compatm, mapconsf, 'ofrac', ocn2atm_map)
+             end if
+             call addmrg_to(compatm , 'So_ugustOut', &
+                  mrg_from=compmed, mrg_fld='So_ugustOut', mrg_type='merge', mrg_fracname='ofrac')
+          end if
+       end if
+    end if
+
+    ! ---------------------------------------------------------------------
     ! to atm: surface snow depth             from ice (needed for cam)
     ! to atm: mean ice volume per unit area  from ice
     ! to atm: mean snow volume per unit area from ice
@@ -2158,7 +2178,7 @@ contains
           ! liquid from river and possibly flood from river to ocean
           if (fldchk(is_local%wrap%FBImp(comprof, comprof), 'Forr_rofl' , rc=rc)) then
              if (trim(rof2ocn_liq_rmap) == 'unset') then
-                call addmap_from(comprof, 'Forr_rofl', compocn, mapconsd, 'none', 'unset')
+                call addmap_from(comprof, 'Forr_rofl', compocn, mapconsd, 'one', 'unset')
              else
                 call addmap_from(comprof, 'Forr_rofl', compocn, map_rof2ocn_liq, 'none', rof2ocn_liq_rmap)
              end if
@@ -2182,7 +2202,7 @@ contains
           ! ice from river to ocean
           if (fldchk(is_local%wrap%FBImp(comprof, comprof), 'Forr_rofi' , rc=rc)) then
              if (trim(rof2ocn_ice_rmap) == 'unset') then
-                call addmap_from(comprof, 'Forr_rofi', compocn, mapconsd, 'none', 'unset')
+                call addmap_from(comprof, 'Forr_rofi', compocn, mapconsd, 'one', 'unset')
              else
                 call addmap_from(comprof, 'Forr_rofi', compocn, map_rof2ocn_ice, 'none', rof2ocn_ice_rmap)
              end if
