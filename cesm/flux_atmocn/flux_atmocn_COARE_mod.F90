@@ -250,6 +250,7 @@ contains
     real(R8), intent(out) :: zo,zot,zoq,L,usr,tsr,qsr
     real(R8), intent(out) :: Cd,Ch,Ce
     real(R8), intent(out) :: trf,qrf,urf,vrf
+    real(R8), intent(out) :: Le
 
     ! Local variables
     real(R8) :: ua,va,ta,q,rb,us,vs,ts,qs,zi,zu,zt,zq,zru,zrq,zrt       ! internal vars
