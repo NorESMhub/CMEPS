@@ -111,6 +111,7 @@ contains
     real(R8)    :: trf,qrf,urf,vrf ! reference-height quantities
     real(r8)    :: esat_val        ! value of esat (saturation vapor pressure) at this point
     real(r8)    :: qsat_val        ! value of qsat (saturation specific humidity) at this point
+    real(r8)    :: Le              ! latent heat of evaporation from COARE 
 
     !--- local functions --------------------------------
     real(R8)    :: qsat   ! function: the saturation humididty of air (kg/m^3)
@@ -168,7 +169,7 @@ contains
                tau,hsb,hlb,                                    & ! out: fluxes
                zo,zot,zoq,hol,ustar,tstar,qstar,               & ! out: ss scales
                rd,rh,re,                                       & ! out: exch. coeffs
-               trf,qrf,urf,vrf)                                  ! out: reference-height params
+               trf,qrf,urf,vrf,Le)                               ! out: reference-height params
 
           ! for the sake of maintaining same defs
           hol = zbot(n)/hol
@@ -186,7 +187,7 @@ contains
           lwup(n) = -loc_stebol * ts(n)**4
 
           !--- water flux ---
-          evap(n) = lat(n)/loc_latvap
+          evap(n) = lat(n)/Le
 
           !------------------------------------------------------------
           ! compute diagnositcs: 2m ref T & Q, 10m wind speed squared
@@ -239,7 +240,7 @@ contains
         tau,hsb,hlb,                     &    ! out: fluxes
         zo,zot,zoq,L,usr,tsr,qsr,        &    ! out: ss scales
         Cd,Ch,Ce,                        &    ! out: exch. coeffs
-        trf,qrf,urf,vrf)                      ! out: reference-height params
+        trf,qrf,urf,vrf,Le)                   ! out: reference-height params
 
     ! Arguments
     real(R8), intent(in)  :: ubt,vbt,tbt,qbt,rbt
@@ -253,7 +254,7 @@ contains
     ! Local variables
     real(R8) :: ua,va,ta,q,rb,us,vs,ts,qs,zi,zu,zt,zq,zru,zrq,zrt       ! internal vars
     real(R8) :: cpa,rgas,grav,pi,von,beta                               ! phys. params
-    real(R8) :: le,rhoa,cpv                                             ! derived phys. params
+    real(R8) :: rhoa,cpv                                                ! derived phys. params
     real(R8) :: t,visa,du,dq,dt                                         ! params of problem
     real(R8) :: u10,zo10,zot10,cd10,ch10,ct10,ct,cc,ribu,zetu,l10,charn ! init vars
     real(R8) :: zet,rr,bf,ug,ut                                         ! loop iter vars
