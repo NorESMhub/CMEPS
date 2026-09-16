@@ -38,7 +38,11 @@
   <entry id="COUPLING_MODE">
     <type>char</type>
     <valid_values>cesm,noresm</valid_values>
-    <default_value>noresm</default_value>
+    <default_value>cesm</default_value>
+    <values>
+      <value cime_model="cesm">cesm</value>
+      <value cime_model="noresm">noresm</value>
+    </values>
     <group>run_coupling</group>
     <file>env_run.xml</file>
     <desc>coupling mode</desc>
@@ -2512,7 +2516,7 @@
    <desc>add aoflux calculation to runseq</desc>
  </entry>
 
-  <!-- ===================================================================== -->
+ <!-- ===================================================================== -->
   <!-- TODO: the following should be deleted. They are still used by  -->
   <!-- the component testing but are not doing anything in cmeps -->
   <!-- ===================================================================== -->
@@ -2523,9 +2527,8 @@
     <default_value>FALSE</default_value>
     <group>run_flags</group>
     <file>env_run.xml</file>
-    <desc>turns on coupler bit-for-bit reproducibility with varying pe counts</desc>
+    <desc>does not do anything currently in CMEPS</desc>
   </entry>
-
 
  <help>
     =========================================
