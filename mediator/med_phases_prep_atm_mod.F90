@@ -64,6 +64,8 @@ contains
     real(R8), pointer          :: ifrac(:)
     real(R8), pointer          :: ofrac(:)
     integer                    :: n,nf
+    character(len=CL)          :: cvalue
+    logical                    :: isPresent, IsSet
     type(med_fldlist_type), pointer :: fldList
     character(len=*),parameter :: subname='(med_phases_prep_atm)'
     !-------------------------------------------------------------------------------
