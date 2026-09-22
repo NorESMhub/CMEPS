@@ -594,8 +594,9 @@
       .true. if ocean sends fields at multiple ocean levels to the land-ice component
     </desc>
     <values>
-      <value ocn_multilev=".false.">.false.</value>
-      <value ocn_multilev=".true.">.true.</value>
+      <value>.false.</value>
+      <value COMP_OCN="blom">.true.</value>
+      <value compset="DOCN%MULTILEV">.true.</value>
     </values>
   </entry>
 
@@ -662,12 +663,12 @@
     <valid_values>none,atm,med</valid_values>
     <desc>
     if none, no enthaply flux is computed to send to the ocean,
-    if atm, the atm (in this case cam) computes enthalpy to send to the ocn (in this case BLOM)
+    if atm, the atm (in this case CAM) computes enthalpy to send to the ocn (in this case BLOM)
     if med, the mediator computes computes enthalpy to send to the ocn (in this case MOM6)
     </desc>
     <values>
       <value>none</value>
-      <value comp_ocn="mom6" comp_atm="cam">med</value>
+      <value COMP_OCN="mom" COMP_ATM="cam">med</value>
     </values>
   </entry>
 
@@ -1032,7 +1033,7 @@
     </desc>
     <values>
       <value>v0</value>
-      <value comp_ocn="mom">v1</value>
+      <value COMP_OCN="mom">v1</value>
     </values>
   </entry>
 
@@ -1914,8 +1915,8 @@
     <group>ALLCOMP_attributes</group>
     <desc>Auxiliary mediator lnd2med fields every year</desc>
     <values>
-      <value set_histaux_l2x1yrg=".true." >.true.</value>
-      <value set_histaux_l2x1yrg=".false.">.false.</value>
+      <value>.false.</value>
+      <value COMP_OCN="blom" COMP_LND="clm">.true.</value>
     </values>
   </entry>
 
