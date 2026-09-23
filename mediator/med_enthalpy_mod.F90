@@ -1,4 +1,4 @@
-module med_phases_enthalpy_mod
+module med_enthalpy_mod
 
   !-----------------------------------------------------------------------------
   ! Enthalpy flux calculations shared by the ocn and atm prep phases.
@@ -25,11 +25,11 @@ module med_phases_enthalpy_mod
   implicit none
   private
 
-  public :: med_phases_enthalpy_init                ! called from med_phases_prep_ocn_init
-  public :: med_phases_enthalpy_med_computation     ! mediator computes the enthalpy flux
-  public :: med_phases_enthalpy_atm_computation     ! enthalpy flux comes from the atm
-  public :: med_phases_enthalpy_correction          ! global enthalpy correction
-  public :: med_phases_enthalpy_runoff              ! global enthalpy of runoff
+  public :: med_enthalpy_init                ! called from med_phases_prep_ocn_init
+  public :: med_enthalpy_med_computation     ! mediator computes the enthalpy flux
+  public :: med_enthalpy_atm_computation     ! enthalpy flux comes from the atm
+  public :: med_enthalpy_correction          ! global enthalpy correction
+  public :: med_enthalpy_runoff              ! global enthalpy of runoff
 
   ! Which component computes the enthalpy flux - 'med', 'atm' or 'none'
   character(len=CS), public :: component_computes_enthalpy_flux = 'unset'
@@ -45,7 +45,7 @@ module med_phases_enthalpy_mod
 contains
 !-----------------------------------------------------------------------------
 
-  subroutine med_phases_enthalpy_init(gcomp, rc)
+  subroutine med_enthalpy_init(gcomp, rc)
 
     ! Determine which component computes the enthalpy flux.
 
@@ -58,7 +58,7 @@ contains
     ! local variables
     character(len=CL) :: cvalue
     logical           :: isPresent, isSet
-    character(len=*), parameter :: subname='(med_phases_enthalpy_init)'
+    character(len=*), parameter :: subname='(med_enthalpy_init)'
     !---------------------------------------
 
     rc = ESMF_SUCCESS
@@ -72,10 +72,10 @@ contains
        component_computes_enthalpy_flux = 'none'
     end if
 
-  end subroutine med_phases_enthalpy_init
+  end subroutine med_enthalpy_init
 
   !-----------------------------------------------------------------------------
-  subroutine med_phases_enthalpy_med_computation(gcomp, rc)
+  subroutine med_enthalpy_med_computation(gcomp, rc)
 
     ! Compute enthalpy associated with rain, snow, condensation and liquid river & glc runoff.
     ! The sea-ice model already accounts for the enthalpy flux (as part of melth), so
@@ -105,7 +105,7 @@ contains
     real(r8), pointer     :: rofi_glc(:), hrofi_glc(:)
     real(r8), pointer     :: areas(:)
     real(r8), allocatable :: hcorr(:)
-    character(len=*), parameter :: subname='(med_phases_enthalpy_med_computation)'
+    character(len=*), parameter :: subname='(med_enthalpy_med_computation)'
     !---------------------------------------
 
     rc = ESMF_SUCCESS
@@ -193,17 +193,17 @@ contains
                   areas(n) * glob_area_inv
           end do
 
-          call med_phases_enthalpy_correction(gcomp, hcorr, rc)
+          call med_enthalpy_correction(gcomp, hcorr, rc)
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
           deallocate(hcorr)
 
        end if
     end if ! condition for using global energy fixer
 
-  end subroutine med_phases_enthalpy_med_computation
+  end subroutine med_enthalpy_med_computation
 
   !-----------------------------------------------------------------------------
-  subroutine med_phases_enthalpy_atm_computation(gcomp, rc)
+  subroutine med_enthalpy_atm_computation(gcomp, rc)
 
     ! Apply the enthalpy flux obtained from the prognostic atm.
     ! This is the coupling_mode='noresm' path, where the atm computes the enthalpy flux.
@@ -239,7 +239,7 @@ contains
     ! variable latent heat correction part
     logical, parameter    :: separate_varlat=.true.
     real(r8), allocatable :: acorr(:)
-    character(len=*), parameter :: subname='(med_phases_enthalpy_atm_computation)'
+    character(len=*), parameter :: subname='(med_enthalpy_atm_computation)'
     !---------------------------------------
 
     rc = ESMF_SUCCESS
@@ -300,8 +300,8 @@ contains
              allocate(hrof2atm(size(tocn)))
              hrof2atm(:) = hrof(:)*areas(:) / (4._r8 * shr_const_pi)
 
-             ! determine module variable global_hrof_corr in med_phases_enthalpy_mod
-             call med_phases_enthalpy_runoff(gcomp, hrof2atm, rc)
+             ! determine module variable global_hrof_corr in med_enthalpy_mod
+             call med_enthalpy_runoff(gcomp, hrof2atm, rc)
              if (ChkErr(rc,__LINE__,u_FILE_u)) return
           end if
        end if
@@ -358,15 +358,15 @@ contains
        endif
     endif
 
-  end subroutine med_phases_enthalpy_atm_computation
+  end subroutine med_enthalpy_atm_computation
 
 
   !-----------------------------------------------------------------------------
-  subroutine med_phases_enthalpy_correction (gcomp, hcorr, rc)
+  subroutine med_enthalpy_correction (gcomp, hcorr, rc)
 
     use ESMF , only : ESMF_GridComp, ESMF_SUCCESS
 
-    ! Enthalpy correction term calculation called by med_phases_enthalpy_med_computation
+    ! Enthalpy correction term calculation called by med_enthalpy_med_computation
     ! Note that this is only called if the following fields are in FBExp(compocn)
     ! 'Faxa_rain','Foxx_hrain','Faxa_snow' ,'Foxx_hsnow',
     ! 'Foxx_evap','Foxx_hevap','Foxx_hcond','Foxx_rofl',
@@ -384,14 +384,14 @@ contains
     call med_global_sums(gcomp, hcorr, global_htot_corr, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-  end subroutine med_phases_enthalpy_correction
+  end subroutine med_enthalpy_correction
 
   !-----------------------------------------------------------------------------
-  subroutine med_phases_enthalpy_runoff(gcomp, hcorr, rc)
+  subroutine med_enthalpy_runoff(gcomp, hcorr, rc)
 
     use ESMF , only : ESMF_GridComp, ESMF_SUCCESS
 
-    ! Enthalpy of runoff, called by med_phases_enthalpy_atm_computation
+    ! Enthalpy of runoff, called by med_enthalpy_atm_computation
     ! Note that this is only called if the following fields are in FBExp(compocn)
     ! - Faxa_hmat, Faxa_hlat
     ! The result (Faxx_hrof) is sent back to the atm in subroutine med_phases_prep_atm
@@ -407,6 +407,6 @@ contains
     call med_global_sums(gcomp, hcorr, global_hrof_corr, rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-  end subroutine med_phases_enthalpy_runoff
+  end subroutine med_enthalpy_runoff
 
-end module med_phases_enthalpy_mod
+end module med_enthalpy_mod

@@ -11,9 +11,9 @@ module med_phases_prep_atm_mod
   use med_constants_mod     , only : dbug_flag   => med_constants_dbug_flag
   use med_utils_mod         , only : memcheck    => med_memcheck
   use med_utils_mod         , only : chkerr      => med_utils_ChkErr
-  use med_phases_enthalpy_mod, only : med_phases_enthalpy_init
-  use med_phases_enthalpy_mod, only : component_computes_enthalpy_flux
-  use med_phases_enthalpy_mod, only : global_htot_corr, global_hrof_corr
+  use med_enthalpy_mod, only : med_enthalpy_init
+  use med_enthalpy_mod, only : component_computes_enthalpy_flux
+  use med_enthalpy_mod, only : global_htot_corr, global_hrof_corr
   use med_methods_mod       , only : FB_diagnose => med_methods_FB_diagnose
   use med_methods_mod       , only : FB_fldchk   => med_methods_FB_FldChk
   use med_methods_mod       , only : FB_getfldptr=> med_methods_FB_GetFldPtr
@@ -236,14 +236,14 @@ contains
     ! Determine component_computes_enthalpy_flux if it is unset
     ! (normally already set by med_phases_prep_ocn_init)
     if (component_computes_enthalpy_flux == 'unset') then
-       call med_phases_enthalpy_init(gcomp, rc)
+       call med_enthalpy_init(gcomp, rc)
        if (chkerr(rc,__LINE__,u_FILE_u)) return
     end if
 
     ! Only do the following correction if the mediator is computing the enthalpy to be sent to the ocean
     ! from rain, snow, etc.
     ! Note that global_htot_corr is preset to zero as a module variable - and will only be set differently
-    ! if med_phases_enthalpy_correction is called in component_computes_enthalpy_flux == 'med'
+    ! if med_enthalpy_correction is called in component_computes_enthalpy_flux == 'med'
     if (trim(component_computes_enthalpy_flux) == 'med') then
        if ( FB_FldChk(is_local%wrap%FBExp(compatm), 'Faxx_sen' , rc=rc)) then
           call FB_getfldptr(is_local%wrap%FBExp(compatm), 'Faxx_sen', dataptr1, rc=rc)

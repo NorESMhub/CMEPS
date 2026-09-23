@@ -14,9 +14,9 @@ module med_phases_prep_ocn_mod
   use med_utils_mod         , only : memcheck      => med_memcheck
   use med_utils_mod         , only : chkerr        => med_utils_ChkErr
   use med_global_sums_mod   , only : med_global_sums
-  use med_phases_enthalpy_mod, only : med_phases_enthalpy_init
-  use med_phases_enthalpy_mod, only : med_phases_enthalpy_med_computation
-  use med_phases_enthalpy_mod, only : med_phases_enthalpy_atm_computation
+  use med_enthalpy_mod, only : med_enthalpy_init
+  use med_enthalpy_mod, only : med_enthalpy_med_computation
+  use med_enthalpy_mod, only : med_enthalpy_atm_computation
   use med_methods_mod       , only : FB_diagnose   => med_methods_FB_diagnose
   use med_methods_mod       , only : FB_fldchk     => med_methods_FB_FldChk
   use med_methods_mod       , only : FB_GetFldPtr  => med_methods_FB_GetFldPtr
@@ -86,7 +86,7 @@ contains
     call FB_reset(is_local%wrap%FBExpAccumOcn, value=czero, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
 
-    call med_phases_enthalpy_init(gcomp, rc)
+    call med_enthalpy_init(gcomp, rc)
     if (chkerr(rc,__LINE__,u_FILE_u)) return
 
   end subroutine med_phases_prep_ocn_init
@@ -162,7 +162,7 @@ contains
     !--- custom calculation - enthalpy flux computed in mediator for cesm
     !---------------------------------------
     if (trim(coupling_mode) == 'cesm') then
-       call med_phases_enthalpy_med_computation(gcomp, rc)
+       call med_enthalpy_med_computation(gcomp, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
@@ -170,7 +170,7 @@ contains
     !--- custom calculation - enthalpy flux obtained from prognostic atm for noresm
     !---------------------------------------
     if (trim(coupling_mode) == 'noresm') then
-       call med_phases_enthalpy_atm_computation(gcomp, rc)
+       call med_enthalpy_atm_computation(gcomp, rc)
        if (ChkErr(rc,__LINE__,u_FILE_u)) return
     end if
 
