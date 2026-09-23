@@ -541,7 +541,7 @@ contains
   !===============================================================================
   subroutine med_phases_history_write_data2glc(gcomp, fldbun_import, comp_import, fldbun_export, rc)
 
-    ! Write yearly average of lnd -> glc fields on both land and glc grids
+    ! Write yearly average of (lnd or ocn)->glc fields on both (lnd or ocn) grids and glc grids
 
     use med_internalstate_mod , only : compglc, complnd, compocn
     use med_constants_mod     , only : SecPerDay => med_constants_SecPerDay
@@ -626,7 +626,6 @@ contains
     call ESMF_TimeGet(nexttime, yy=yr, mm=mon, dd=day, s=sec, rc=rc)
     if (ChkErr(rc,__LINE__,u_FILE_u)) return
     write(nexttime_str,'(i4.4,a,i2.2,a,i2.2,a,i5.5)') yr,'-',mon,'-',day,'-',sec
-    write(hist_file, "(6a)") trim(case_name),'.cpl',trim(inst_tag),'.hx.1yr2glc.',trim(nexttime_str),'.nc'
     if (present(comp_import)) then
        if (.not. present(fldbun_import)) then
           call shr_log_error(subname//'if comp_import is present, then fldbun_import must be present', rc=rc)
@@ -636,6 +635,9 @@ contains
           write(hist_file, "(6a)") trim(case_name),'.cpl',trim(inst_tag),'.hx.lnd2glc.',trim(nexttime_str),'.nc'
        else if (comp_import == compocn) then
           write(hist_file, "(6a)") trim(case_name),'.cpl',trim(inst_tag),'.hx.ocn2glc.',trim(nexttime_str),'.nc'
+       else
+          call shr_log_error(subname//'only lnd and ocn imports are supported in data2glc output', rc=rc)
+          return
        end if
     else
        write(hist_file, "(6a)") trim(case_name),'.cpl',trim(inst_tag),'.hx.exp2glc.',trim(nexttime_str),'.nc'
@@ -660,7 +662,10 @@ contains
           if (ChkErr(rc,__LINE__,u_FILE_u)) return
        end if
 
-       if (present(fldbun_import)) then
+       if (present(fldbun_import) .and. present(fldbun_export)) then
+          call shr_log_error(subname//'fldbun_import and fldbun_export cannot both be present as arguments', rc=rc)
+          return
+       else if (present(fldbun_import)) then
           ! import field bundle
           call med_io_write(io_file, fldbun_import, whead(m), wdata(m), &
                is_local%wrap%nx(comp_import), is_local%wrap%ny(comp_import), &
@@ -1187,13 +1192,13 @@ contains
                 ! TODO: print warning statement if remove field
                 ! TODO: if request field that is NOT in the field definition file - then quit
                 ! Remove all fields from fieldnamelist that are not in FBImp(compid,compid)
-                fieldCount = size(fieldnamelist)
-                do n = 1,fieldcount
-                   if (.not. med_methods_FB_fldchk(is_local%wrap%FBImp(compid,compid), trim(fieldnamelist(n)), rc)) then
-                      do n1 = n, fieldCount-1
-                         fieldnamelist(n1) = fieldnamelist(n1+1)
-                      end do
-                      fieldCount = fieldCount - 1
+                ! The loop invariant (fieldCount <= n) below guarantees that the write index
+                ! never passes the read index, so nothing unread gets overwritten.
+                fieldCount = 0
+                do n = 1,size(fieldnamelist)
+                   if (med_methods_FB_fldchk(is_local%wrap%FBImp(compid,compid), trim(fieldnamelist(n)), rc)) then
+                      fieldCount = fieldCount + 1
+                      fieldnamelist(fieldCount) = fieldnamelist(n)
                    end if
                 end do
 

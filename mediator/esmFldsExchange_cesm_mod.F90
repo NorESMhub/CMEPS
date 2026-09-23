@@ -64,6 +64,7 @@ module esmFldsExchange_cesm_mod
   use med_internalstate_mod , only : mrg_fracname_lnd2rof, map_fracname_lnd2rof
   use med_internalstate_mod , only : mrg_fracname_lnd2glc, map_fracname_lnd2glc
   use med_internalstate_mod , only : coupling_mode
+  use med_utils_mod         , only : chkerr => med_utils_chkerr
   use shr_log_mod           , only : shr_log_error
   use wtracers_mod          , only : wtracers_present
   use wtracers_mod          , only : WTRACERS_SUFFIX
@@ -122,7 +123,6 @@ contains
     use ESMF
     use NUOPC
     use med_kind_mod          , only : CX=>SHR_KIND_CX, CS=>SHR_KIND_CS, CL=>SHR_KIND_CL, R8=>SHR_KIND_R8
-    use med_utils_mod         , only : chkerr => med_utils_chkerr
     use med_methods_mod       , only : fldchk => med_methods_FB_FldChk
     use med_internalstate_mod , only : InternalState, logunit, maintask
     use med_internalstate_mod , only : compmed, compatm, complnd, compocn
@@ -1802,22 +1802,25 @@ contains
           call addfld_to  (compocn, 'Faxa_hmat_oa') ! handled in prep_ocn
           call addfld_from(compatm, 'Faxa_hlat')
           call addfld_to  (compocn, 'Faxa_hlat')
+          ! Sent back to atm
           call addfld_to  (compatm, 'Faxx_hrof')   ! enthalpy of runoff, computed in med_phases_prep_ocn
        else
           if (fldchk(is_local%wrap%FBImp(compatm, compatm), 'Faxa_hmat', rc=rc) .and. &
-               fldchk(is_local%wrap%FBExp(compocn)         , 'Faxa_hmat', rc=rc)) then
+              fldchk(is_local%wrap%FBExp(compocn)         , 'Faxa_hmat', rc=rc)) then
              call addmap_from(compatm, 'Faxa_hmat', compocn, mapconsf, 'one', atm2ocn_map)
              call addmrg_to  (compocn, 'Faxa_hmat', mrg_from=compatm ,mrg_fld='Faxa_hmat' &
                   , mrg_type='copy_with_weights', mrg_fracname='ofrac')
           end if
           if (fldchk(is_local%wrap%FBImp(compatm, compatm), 'Faxa_hlat', rc=rc) .and. &
-               fldchk(is_local%wrap%FBExp(compocn)         , 'Faxa_hlat', rc=rc)) then
+              fldchk(is_local%wrap%FBExp(compocn)         , 'Faxa_hlat', rc=rc)) then
              call addmap_from(compatm, 'Faxa_hlat', compocn, mapconsf, 'one', atm2ocn_map)
              call addmrg_to  (compocn, 'Faxa_hlat', mrg_from=compatm ,mrg_fld='Faxa_hlat' &
                   , mrg_type='copy_with_weights', mrg_fracname='ofrac')
           end if
-          !if (fldchk(is_local%wrap%FBExp(compatm),'Faxx_hrof', rc=rc)) &
-          !   call addmap_from(compocn, 'Faxx_hrof', compatm, mapconsf, 'one', atm2ocn_map)
+          ! Sent back to atm
+          if (fldchk(is_local%wrap%FBExp(compatm),'Faxx_hrof', rc=rc)) then
+             call addmap_from(compocn, 'Faxx_hrof', compatm, mapconsf, 'one', ocn2atm_map)
+          end if
        end if
     end if
 

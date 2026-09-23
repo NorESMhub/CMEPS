@@ -349,7 +349,6 @@
     </desc>
     <values>
       <value>$MASK_MESH</value>
-      <value single_column='true'>null</value>
     </values>
   </entry>
   <entry id="ATM_model" modify_via_xml="COMP_ATM">
@@ -595,8 +594,9 @@
       .true. if ocean sends fields at multiple ocean levels to the land-ice component
     </desc>
     <values>
-      <value ocn_multilev=".false.">.false.</value>
-      <value ocn_multilev=".true.">.true.</value>
+      <value>.false.</value>
+      <value COMP_OCN="blom">.true.</value>
+      <value compset="DOCN%MULTILEV">.true.</value>
     </values>
   </entry>
 
@@ -663,12 +663,12 @@
     <valid_values>none,atm,med</valid_values>
     <desc>
     if none, no enthaply flux is computed to send to the ocean,
-    if atm, the atm (in this case cam) computes enthalpy to send to the ocn (in this case BLOM)
+    if atm, the atm (in this case CAM) computes enthalpy to send to the ocn (in this case BLOM)
     if med, the mediator computes computes enthalpy to send to the ocn (in this case MOM6)
     </desc>
     <values>
       <value>none</value>
-      <value comp_ocn="mom6" comp_atm="cam">med</value>
+      <value COMP_OCN="mom" COMP_ATM="cam">med</value>
     </values>
   </entry>
 
@@ -865,12 +865,23 @@
       <value>on</value>
     </values>
   </entry>
-  <entry id="remove_negative_runoff_lnd">
+  <entry id="remove_negative_runoff_lnd_liq">
     <type>logical</type>
     <category>control</category>
     <group>MED_attributes</group>
     <desc>
-      If true, remove negative runoff generated from the land component by downweighting all positive runoff globally.
+      If true, remove negative liquid runoff generated from the land component by downweighting all positive runoff globally.
+    </desc>
+    <values>
+      <value>.true.</value>
+    </values>
+  </entry>
+  <entry id="remove_negative_runoff_lnd_ice">
+    <type>logical</type>
+    <category>control</category>
+    <group>MED_attributes</group>
+    <desc>
+      If true, remove negative ice runoff generated from the land component by downweighting all positive runoff globally.
     </desc>
     <values>
       <value>.true.</value>
@@ -881,7 +892,7 @@
     <category>control</category>
     <group>MED_attributes</group>
     <desc>
-      If true, remove negative runoff generated from the glc (ice sheet) component by downweighting all positive runoff globally.
+      If true, remove negative runoff (both liq and ice) generated from the glc (ice sheet) component by downweighting all positive runoff globally.
     </desc>
     <values>
       <value>.false.</value>
@@ -1018,11 +1029,13 @@
     <group>MED_attributes</group>
     <valid_values>v0,v1,v2</valid_values>
     <desc>
-      currently v0 refers to budgets using BLOM and v1 refers to budgets using MOM6
+      v0 refers to budgets using BLOM in NorESM3 configurations
+      v1 refers to budgets using MOM6 in CESM3 configurations
+      v2 refers to budgets using BLOM in post NorESM3 configurations where CAM computes enthalpy
     </desc>
     <values>
       <value>v0</value>
-      <value comp_ocn="mom">v1</value>
+      <value COMP_OCN="mom">v1</value>
     </values>
   </entry>
 
@@ -1765,12 +1778,11 @@
     </values>
   </entry>
 
-  <!-- MED histaux lnd2med file 1 - all fields from land with instantaneous output-->
   <entry id="histaux_lnd2med_file1_enabled">
     <type>logical</type>
     <category>aux_hist</category>
     <group>MED_attributes</group>
-    <desc>Auxiliary mediator l2x fields every lnd coupling interval</desc>
+    <desc>Auxiliary mediator lnd2med output every lnd coupling interval</desc>
     <values>
       <value>.false.</value>
     </values>
@@ -1830,12 +1842,11 @@
     </values>
   </entry>
 
-  <!-- MED histaux lnd2med file 1 - all fields from land with instantaneous output-->
   <entry id="histaux_lnd2med_file2_enabled">
     <type>logical</type>
     <category>aux_hist</category>
     <group>MED_attributes</group>
-    <desc>Auxiliary mediator l2x fields every lnd coupling interval</desc>
+    <desc>Auxiliary mediator l2x rof fields averaged over the day</desc>
     <values>
       <value>.false.</value>
     </values>
@@ -1845,8 +1856,13 @@
     <category>aux_hist</category>
     <group>MED_attributes</group>
     <desc>Auxiliary mediator lnd2med output every lnd coupling interval</desc>
+    <!-- Note that in med_phases_history_mod already drops requested aux-history fields that aren't connected -->
+    <!-- When CLM isn't sending non-water tracers it's never in -->
+    <!-- FBImp(complnd,complnd), so the history filter drops it and the aux -->
+    <!-- file just carries the four water fields. -->
     <values>
       <value>'Flrl_rofsur:Flrl_rofi:Flrl_rofgwl:Flrl_rofsub'</value>
+      <value coupling_mode="noresm">'Flrl_rofsur:Flrl_rofi:Flrl_rofgwl:Flrl_rofsub:Flrl_rofsur_nonh2o'</value>
     </values>
   </entry>
   <entry id="histaux_lnd2med_file2_history_option">
@@ -1904,8 +1920,8 @@
     <group>ALLCOMP_attributes</group>
     <desc>Auxiliary mediator lnd2med fields every year</desc>
     <values>
-      <value set_histaux_l2x1yrg=".true." >.true.</value>
-      <value set_histaux_l2x1yrg=".false.">.false.</value>
+      <value>.false.</value>
+      <value COMP_OCN="blom" COMP_LND="clm">.true.</value>
     </values>
   </entry>
 
@@ -2216,7 +2232,7 @@
     <values>
       <value>""</value>
       <value coupling_mode="noresm" COMP_WAV="ww3">Sw_hs_avg:Sw_Tm1_avg:Sw_thm_avg:Sw_u_avg:Sw_v_avg:Sw_ustokes_avg:Sw_vstokes_avg:Sw_tusx_avg:Sw_tusy_avg:Sw_thp0_avg:Sw_fp0_avg:Sw_phs0_avg:Sw_phs1_avg:Sw_pdir0_avg:Sw_pdir1_avg:Sw_pTm10_avg:Sw_pTm11_avg</value>
-      <value coupling_mode="cesm" COMP_WAV='ww3'>Sw_Hs:Sw_t01:Sw_t0m1:Sw_thm:Sw_lamult:Sw_ustokes:Sw_vstokes</value>
+      <value coupling_mode="cesm" COMP_WAV="ww3">Sw_hs_avg:Sw_Tm1_avg:Sw_thm_avg:Sw_u_avg:Sw_v_avg:Sw_ustokes_avg:Sw_vstokes_avg:Sw_tusx_avg:Sw_tusy_avg:Sw_thp0_avg:Sw_fp0_avg:Sw_phs0_avg:Sw_phs1_avg:Sw_pdir0_avg:Sw_pdir1_avg:Sw_pTm10_avg:Sw_pTm11_avg</value>
     </values>
     <desc>Auxiliary mediator wav2med file1 colon delimited output
     fields. NOTE: these are assumed to be time averaged over a day in
@@ -2248,11 +2264,12 @@
     <group>MED_attributes</group>
     <values>
       <value>.false.</value>
-      <value coupling_mode="noresm" COMP_WAV='ww3'>.false.</value>
-      <value coupling_mode="cesm" COMP_WAV='ww3'>.true.</value>
     </values>
     <desc>Auxiliary mediator wav2med file1 time averaged flag for file output.
-    If this flag is set to .false. only instantaneous output will be created in the auxiliary file.</desc>
+    If this flag is set to .false. only instantaneous output will be created in the auxiliary file.
+    For COMP_WAV=ww3 this must remain .false.: the WW3 cap already produces daily-averaged
+    Sw_*_avg fields (fillvalue between day boundaries), so a second mediator-side average would
+    be meaningless.</desc>
   </entry>
   <entry id="histaux_wav2med_file1_auxname">
     <type>char</type>
@@ -2734,6 +2751,42 @@
    </values>
   </entry>
 
+  <entry id="water_tracers_variables_not_checked">
+   <type>char</type>
+   <category>water_tracers</category>
+   <group>ALLCOMP_attributes</group>
+   <desc>
+      Colon-delimited list of variables for which water tracer consistency checks should be skipped.
+
+      Each entry must match the variable name passed to shr_wtracers_check_tracer_ratios.
+      For checks of mediator fields, these are of the form FieldBundleName%FieldName.
+      For example: "FBImpatm%Sa_shum_wtracers:FBExprof%Flrl_irrig_wtracers".
+   </desc>
+   <values>
+      <value></value>
+   </values>
+  </entry>
+
+    <!-- Note: the reprosum_* attributes above are DRIVER_attributes, since they configure
+         shr_reprosum_mod itself, which is done in the driver. bfbflag is in
+         ALLCOMP_attributes because it is read by multiple components that perform global
+         sums. -->
+  <entry id="bfbflag" modify_via_xml="BFBFLAG">
+    <type>logical</type>
+    <category>reprosum</category>
+    <group>ALLCOMP_attributes</group>
+    <desc>
+      If true, perform some calculations (in CMEPS and elsewhere) such as global sums
+      using a less efficient algorithm that is independent of processor count. This allows
+      for Bit-For-Bit (BFB) reproducibility when changing PE layouts, for many compsets.
+      However, setting this flag does NOT guarantee that all calculations throughout all
+      model configurations are BFB independent of processor count.
+    </desc>
+    <values>
+      <value>$BFBFLAG</value>
+    </values>
+  </entry>
+
   <!-- =========================== -->
   <!-- CLOCK Attributes            -->
   <!-- =========================== -->
@@ -2871,8 +2924,8 @@
     <group>CLOCK_attributes</group>
     <valid_values>NO_LEAP,GREGORIAN</valid_values>
     <desc>
-      calendar in use.  [NO_LEAP, GREOGORIAN].
-      set by CALENDAR in env_build.xml
+      calendar in use.  [NO_LEAP, GREGORIAN].
+      set by CALENDAR in env_run.xml
     </desc>
     <values>
       <value>$CALENDAR</value>
