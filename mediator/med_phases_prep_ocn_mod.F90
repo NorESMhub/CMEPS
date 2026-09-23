@@ -13,6 +13,7 @@ module med_phases_prep_ocn_mod
   use med_map_mod           , only : med_map_field_packed
   use med_utils_mod         , only : memcheck      => med_memcheck
   use med_utils_mod         , only : chkerr        => med_utils_ChkErr
+  use med_enthalpy_mod      , only : component_computes_enthalpy_flux
   use med_enthalpy_mod      , only : med_enthalpy_init
   use med_enthalpy_mod      , only : med_enthalpy_med_computation
   use med_enthalpy_mod      , only : med_enthalpy_atm_computation
