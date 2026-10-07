@@ -577,16 +577,15 @@
 
   <entry id="DOUT_S_AGGREGATE_STREAMS">
     <type>char</type>
-    <default_value>cice.h1:365 cice.h2_inst:365 mosart.h0a:12</default_value>
+    <default_value>cice.h1:daily cice.h2_inst:daily mosart.h0a:monthly</default_value>
     <group>run_data_archive</group>
     <file>env_run.xml</file>
-    <desc>Space separated list of history streams to concatenate when
-    DOUT_S_AGGREGATE is TRUE, each given as component.stream:count where count
-    is the number of files a complete year of that stream contains, e.g.
-    "cice.h1:365 mosart.h0a:12" for daily and monthly output.  A year is
-    concatenated only once that many files are present, so a year still being
-    written is left alone.  Each stream must use an unlimited time
-    dimension.</desc>
+    <desc>Space separated list of history streams to concatenate to a
+    yearly file when DOUT_S_AGGREGATE is TRUE. Each item is given as
+    component.stream:frequency where frequency can be 'daily' or
+    'monthly'.  A year of data is aggregated only once the required
+    number of files are present, so a year still being written is left
+    alone.  Each stream must use an unlimited time dimension.</desc>
   </entry>
 
   <entry id="RUN_POSTPROCESSING">
