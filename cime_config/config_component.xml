@@ -2463,6 +2463,15 @@
    <desc>project to charge in scripts if different from PROJECT</desc>
  </entry>
 
+ <entry id="D_PROJECT_ROOT">
+   <type>char</type>
+   <default_value></default_value>
+    <group>run_din</group>
+    <file>env_run.xml</file>
+   <desc>Project work/storage space for inputdata/cime_output_root/dout_s_root etc.
+         needed on some machines where there is no shared scratch</desc>
+ </entry>
+
  <entry id="MODEL_VERSION">
    <type>char</type>
    <default_value>unknown</default_value>
