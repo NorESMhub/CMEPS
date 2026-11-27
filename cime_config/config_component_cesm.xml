@@ -26,6 +26,13 @@
     <desc forcing="SSP460">CMIP6 SSP4-6.0 forcing</desc>
     <desc forcing="SSP534">CMIP6 SSP5-3.4 forcing</desc>
     <desc forcing="SSP585">CMIP6 SSP5-8.5 forcing</desc>
+    <desc forcing="SCEN7H"  >CMIP7 High scenario forcing</desc>
+    <desc forcing="SCEN7HL" >CMIP7 High to Low scenario forcing</desc>
+    <desc forcing="SCEN7M"  >CMIP7 Medium scenario forcing</desc>
+    <desc forcing="SCEN7ML" >CMIP7 Medium to Low scenario forcing</desc>
+    <desc forcing="SCEN7L"  >CMIP7 Low scenario forcing</desc>
+    <desc forcing="SCEN7VL" >CMIP7 Very Low scenario forcing</desc>
+    <desc forcing="SCEN7LN" >CMIP7 Low Negative scenario forcing</desc>
     <desc cpl="BGC[%BDRD][%BPRP]">Biogeochemistry intercomponent </desc>
     <desc option="BDRD"> with diagnostic CO2</desc>
     <desc option="BPRP"> with prognostic CO2 </desc>
